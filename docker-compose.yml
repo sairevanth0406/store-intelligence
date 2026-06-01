@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: purplle-store-intelligence:latest
+    container_name: store_intelligence_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - store_data:/data
+    environment:
+      - DB_PATH=/data/store_intelligence.db
+      - QUEUE_SPIKE_WARN=3
+      - QUEUE_SPIKE_CRITICAL=6
+      - CONV_DROP_WARN=0.80
+      - CONV_DROP_CRITICAL=0.60
+      - DEAD_ZONE_MINUTES=30
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      start-period: 15s
+      retries: 3
+    labels:
+      - "com.purplle.service=store-intelligence"
+      - "com.purplle.store=STORE_BLR_002"
+
+volumes:
+  store_data:
+    driver: local

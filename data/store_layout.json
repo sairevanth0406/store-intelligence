@@ -1,0 +1,271 @@
+{
+  "store_id": "STORE_BLR_002",
+  "store_name": "Purplle Brigade Road, Bangalore",
+  "cameras": {
+    "CAM1": {
+      "description": "Back wall — Skincare brands (The Face Shop, Good Vibes, DermDoc, Minimalist, Aqualogica, Lakme Skin)",
+      "fov_zones": ["EB_KOREAN", "THE_FACE_SHOP", "GOOD_VIBES", "DERMDOC", "MINIMALIST", "AQUALOGICA", "LAKME_SKIN", "ACCESSORIES"]
+    },
+    "CAM2": {
+      "description": "Front wall — Makeup brands (Alps Goodness, Streax, Swiss Beauty, Lakme, Faces Canada, Maybelline, MARS)",
+      "fov_zones": ["MAYBELLINE", "FACES_CANADA", "LAKME", "COLORBAR_SUGAR", "SWISS_BEAUTY", "RENEE_NYBAE", "ALPS_GOODNESS", "STREAX", "MAKEUP_UNIT", "NAIL_UNIT"]
+    },
+    "CAM3": {
+      "description": "Entry/Exit — Glass door threshold (primary people counter)",
+      "fov_zones": ["ENTRY", "ENTRY_MAT", "FOH_LEFT"]
+    },
+    "CAM4": {
+      "description": "Staff area — Stockroom / backroom",
+      "fov_zones": ["STAFF_AREA"]
+    },
+    "CAM5": {
+      "description": "Billing — Cash counter with POS laptop",
+      "fov_zones": ["CASH_COUNTER", "ACCESSORIES", "PMU"]
+    }
+  },
+  "zones": {
+    "EB_KOREAN": {
+      "display_name": "EB Korean",
+      "category": "skincare",
+      "brand": "EB Korean (Farm Stay)",
+      "wall": "back",
+      "camera": "CAM1",
+      "polygon_cam1": [[0, 100], [160, 100], [160, 540], [0, 540]],
+      "floor_rect": {"x": 0, "y": 0, "w": 200, "h": 500},
+      "color": "#4CAF50"
+    },
+    "THE_FACE_SHOP": {
+      "display_name": "The Face Shop",
+      "category": "skincare",
+      "brand": "The Face Shop",
+      "wall": "back",
+      "camera": "CAM1",
+      "polygon_cam1": [[150, 60], [420, 60], [420, 420], [150, 420]],
+      "floor_rect": {"x": 200, "y": 0, "w": 300, "h": 500},
+      "color": "#8BC34A"
+    },
+    "GOOD_VIBES": {
+      "display_name": "Good Vibes",
+      "category": "skincare",
+      "brand": "Good Vibes",
+      "wall": "back",
+      "camera": "CAM1",
+      "polygon_cam1": [[410, 60], [590, 60], [590, 380], [410, 380]],
+      "floor_rect": {"x": 500, "y": 0, "w": 250, "h": 500},
+      "color": "#CDDC39"
+    },
+    "DERMDOC": {
+      "display_name": "DermDoc",
+      "category": "skincare",
+      "brand": "DermDoc",
+      "wall": "back",
+      "camera": "CAM1",
+      "polygon_cam1": [[580, 60], [720, 60], [720, 380], [580, 380]],
+      "floor_rect": {"x": 750, "y": 0, "w": 200, "h": 500},
+      "color": "#009688"
+    },
+    "MINIMALIST": {
+      "display_name": "Minimalist",
+      "category": "skincare",
+      "brand": "Minimalist",
+      "wall": "back",
+      "camera": "CAM1",
+      "polygon_cam1": [[710, 60], [840, 60], [840, 380], [710, 380]],
+      "floor_rect": {"x": 950, "y": 0, "w": 200, "h": 500},
+      "color": "#00BCD4"
+    },
+    "AQUALOGICA": {
+      "display_name": "Aqualogica",
+      "category": "skincare",
+      "brand": "Aqualogica",
+      "wall": "back",
+      "camera": "CAM1",
+      "polygon_cam1": [[830, 60], [960, 60], [960, 380], [830, 380]],
+      "floor_rect": {"x": 1150, "y": 0, "w": 200, "h": 500},
+      "color": "#03A9F4"
+    },
+    "LAKME_SKIN": {
+      "display_name": "Lakme Skin",
+      "category": "skincare",
+      "brand": "Lakme",
+      "wall": "back",
+      "camera": "CAM1",
+      "polygon_cam1": [[950, 60], [1100, 60], [1100, 380], [950, 380]],
+      "floor_rect": {"x": 1350, "y": 0, "w": 200, "h": 500},
+      "color": "#E91E63"
+    },
+    "ACCESSORIES": {
+      "display_name": "Accessories",
+      "category": "accessories",
+      "brand": null,
+      "wall": "back",
+      "camera": "CAM1",
+      "polygon_cam1": [[1090, 60], [1280, 60], [1280, 380], [1090, 380]],
+      "floor_rect": {"x": 1550, "y": 0, "w": 250, "h": 500},
+      "color": "#9C27B0"
+    },
+    "MAYBELLINE": {
+      "display_name": "Maybelline",
+      "category": "makeup",
+      "brand": "Maybelline",
+      "wall": "front",
+      "camera": "CAM2",
+      "polygon_cam2": [[780, 100], [960, 100], [960, 500], [780, 500]],
+      "floor_rect": {"x": 1550, "y": 1200, "w": 200, "h": 400},
+      "color": "#FF5722"
+    },
+    "FACES_CANADA": {
+      "display_name": "Faces Canada",
+      "category": "makeup",
+      "brand": "Faces Canada",
+      "wall": "front",
+      "camera": "CAM2",
+      "polygon_cam2": [[610, 100], [790, 100], [790, 500], [610, 500]],
+      "floor_rect": {"x": 1350, "y": 1200, "w": 200, "h": 400},
+      "color": "#FF9800"
+    },
+    "LAKME": {
+      "display_name": "Lakme Makeup",
+      "category": "makeup",
+      "brand": "Lakme",
+      "wall": "front",
+      "camera": "CAM2",
+      "polygon_cam2": [[440, 100], [620, 100], [620, 500], [440, 500]],
+      "floor_rect": {"x": 1150, "y": 1200, "w": 200, "h": 400},
+      "color": "#FFC107"
+    },
+    "COLORBAR_SUGAR": {
+      "display_name": "Colorbar / Sugar",
+      "category": "makeup",
+      "brand": "Colorbar",
+      "wall": "front",
+      "camera": "CAM2",
+      "polygon_cam2": [[300, 100], [450, 100], [450, 500], [300, 500]],
+      "floor_rect": {"x": 950, "y": 1200, "w": 200, "h": 400},
+      "color": "#F44336"
+    },
+    "SWISS_BEAUTY": {
+      "display_name": "Swiss Beauty",
+      "category": "makeup",
+      "brand": "Swiss Beauty",
+      "wall": "front",
+      "camera": "CAM2",
+      "polygon_cam2": [[160, 100], [310, 100], [310, 500], [160, 500]],
+      "floor_rect": {"x": 750, "y": 1200, "w": 200, "h": 400},
+      "color": "#E91E63"
+    },
+    "RENEE_NYBAE": {
+      "display_name": "Renee / NY Bae",
+      "category": "makeup",
+      "brand": "Renee",
+      "wall": "front",
+      "camera": "CAM2",
+      "polygon_cam2": [[0, 100], [170, 100], [170, 500], [0, 500]],
+      "floor_rect": {"x": 500, "y": 1200, "w": 250, "h": 400},
+      "color": "#9C27B0"
+    },
+    "ALPS_GOODNESS": {
+      "display_name": "Alps Goodness",
+      "category": "haircare",
+      "brand": "Alps Goodness",
+      "wall": "front",
+      "camera": "CAM2",
+      "polygon_cam2": [[0, 50], [120, 50], [120, 200], [0, 200]],
+      "floor_rect": {"x": 250, "y": 1200, "w": 200, "h": 400},
+      "color": "#4CAF50"
+    },
+    "STREAX": {
+      "display_name": "Streax",
+      "category": "haircare",
+      "brand": "Streax",
+      "wall": "front",
+      "camera": "CAM2",
+      "polygon_cam2": [[0, 200], [120, 200], [120, 400], [0, 400]],
+      "floor_rect": {"x": 0, "y": 1200, "w": 200, "h": 400},
+      "color": "#795548"
+    },
+    "FRAGRANCE": {
+      "display_name": "Fragrance",
+      "category": "fragrance",
+      "brand": null,
+      "wall": "center",
+      "camera": "CAM2",
+      "polygon_cam2": [[200, 400], [380, 400], [380, 600], [200, 600]],
+      "floor_rect": {"x": 500, "y": 700, "w": 180, "h": 300},
+      "color": "#673AB7"
+    },
+    "NAIL_UNIT": {
+      "display_name": "Nail Unit",
+      "category": "nails",
+      "brand": null,
+      "wall": "center",
+      "camera": "CAM2",
+      "polygon_cam2": [[380, 350], [560, 350], [560, 600], [380, 600]],
+      "floor_rect": {"x": 680, "y": 700, "w": 180, "h": 300},
+      "color": "#FF4081"
+    },
+    "MAKEUP_UNIT": {
+      "display_name": "Makeup Island",
+      "category": "makeup",
+      "brand": null,
+      "wall": "center",
+      "camera": "CAM2",
+      "polygon_cam2": [[560, 300], [850, 300], [850, 650], [560, 650]],
+      "floor_rect": {"x": 860, "y": 650, "w": 300, "h": 350},
+      "color": "#FF6E40"
+    },
+    "CASH_COUNTER": {
+      "display_name": "Cash Counter (Billing)",
+      "category": "billing",
+      "brand": null,
+      "wall": "right",
+      "camera": "CAM5",
+      "polygon_cam5": [[0, 200], [500, 200], [500, 720], [0, 720]],
+      "floor_rect": {"x": 1800, "y": 600, "w": 220, "h": 450},
+      "color": "#F44336"
+    },
+    "PMU": {
+      "display_name": "PMU Service",
+      "category": "service",
+      "brand": null,
+      "wall": "right",
+      "camera": "CAM5",
+      "polygon_cam5": [[500, 400], [960, 400], [960, 720], [500, 720]],
+      "floor_rect": {"x": 1800, "y": 1100, "w": 200, "h": 300},
+      "color": "#FF5722"
+    },
+    "ENTRY": {
+      "display_name": "Store Entry",
+      "category": "entry",
+      "brand": null,
+      "wall": "left",
+      "camera": "CAM3",
+      "polygon_cam3": [[200, 50], [700, 50], [700, 600], [200, 600]],
+      "floor_rect": {"x": 0, "y": 600, "w": 200, "h": 600},
+      "color": "#2196F3"
+    },
+    "STAFF_AREA": {
+      "display_name": "Staff / Stockroom",
+      "category": "staff",
+      "brand": null,
+      "wall": "back",
+      "camera": "CAM4",
+      "polygon_cam4": [[0, 0], [1280, 0], [1280, 720], [0, 720]],
+      "floor_rect": {"x": 0, "y": -300, "w": 400, "h": 300},
+      "color": "#607D8B"
+    }
+  },
+  "salespersons": {
+    "kasthuri": {"role": "beauty_advisor", "camera_primary": "CAM1"},
+    "Zufishan": {"role": "beauty_advisor", "camera_primary": "CAM2"},
+    "Shashikala": {"role": "beauty_advisor", "camera_primary": "CAM2"},
+    "Naziya": {"role": "beauty_advisor", "camera_primary": "CAM1"},
+    "Priya": {"role": "cashier", "camera_primary": "CAM5"}
+  },
+  "anomaly_thresholds": {
+    "BILLING_QUEUE_SPIKE": {"warn": 3, "critical": 6},
+    "CONVERSION_DROP": {"warn_pct": 0.80, "critical_pct": 0.60},
+    "DEAD_ZONE_MINUTES": 30,
+    "STALE_FEED_MINUTES": 10
+  }
+}

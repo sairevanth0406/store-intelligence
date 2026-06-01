@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Purplle Store Intelligence — Brigade Road, Bangalore</title>
+  <meta name="description" content="Real-time retail intelligence dashboard for Purplle Brigade Road store. Live visitor analytics, brand zone heatmap, conversion funnel, and anomaly detection." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-p">purplle</span>
+        <span class="logo-badge">Store Intelligence</span>
+      </div>
+      <div class="store-info">
+        <span class="store-name">Brigade Road, Bangalore</span>
+        <span class="store-id" id="store-id-badge">STORE_BLR_002</span>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="live-indicator">
+        <span class="pulse-dot"></span>
+        <span>LIVE</span>
+      </div>
+      <div class="current-time" id="current-time"></div>
+    </div>
+    <div class="header-right">
+      <div class="health-badge" id="health-badge">
+        <span class="health-dot"></span>
+        <span id="health-text">Checking...</span>
+      </div>
+      <select id="window-select" class="window-select">
+        <option value="1">Last 1 Hour</option>
+        <option value="4">Last 4 Hours</option>
+        <option value="8">Last 8 Hours</option>
+        <option value="24" selected>Last 24 Hours</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <main class="main-grid">
+
+    <!-- KPI Cards Row -->
+    <section class="kpi-row" id="kpi-row">
+      <div class="kpi-card" id="kpi-visitors">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-content">
+          <div class="kpi-value" id="kpi-visitors-val">—</div>
+          <div class="kpi-label">Unique Visitors</div>
+          <div class="kpi-sub" id="kpi-visitors-sub">Excluding staff</div>
+        </div>
+      </div>
+      <div class="kpi-card" id="kpi-conversion">
+        <div class="kpi-icon">🛍️</div>
+        <div class="kpi-content">
+          <div class="kpi-value" id="kpi-conversion-val">—</div>
+          <div class="kpi-label">Conversion Rate</div>
+          <div class="kpi-sub" id="kpi-conversion-sub">POS correlated</div>
+        </div>
+      </div>
+      <div class="kpi-card" id="kpi-dwell">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-content">
+          <div class="kpi-value" id="kpi-dwell-val">—</div>
+          <div class="kpi-label">Avg Dwell Time</div>
+          <div class="kpi-sub">Per visitor session</div>
+        </div>
+      </div>
+      <div class="kpi-card" id="kpi-queue">
+        <div class="kpi-icon">🧾</div>
+        <div class="kpi-content">
+          <div class="kpi-value" id="kpi-queue-val">—</div>
+          <div class="kpi-label">Queue Depth</div>
+          <div class="kpi-sub">Billing counter now</div>
+        </div>
+      </div>
+      <div class="kpi-card" id="kpi-abandonment">
+        <div class="kpi-icon">🚪</div>
+        <div class="kpi-content">
+          <div class="kpi-value" id="kpi-abandonment-val">—</div>
+          <div class="kpi-label">Abandonment Rate</div>
+          <div class="kpi-sub">Left without billing</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+
+      <!-- LEFT: Store Heatmap -->
+      <section class="panel heatmap-panel">
+        <div class="panel-header">
+          <h2>🗺️ Store Zone Heatmap</h2>
+          <span class="panel-sub">Brigade Road floor plan · Brand zones</span>
+        </div>
+        <div class="heatmap-container">
+          <svg id="store-heatmap" viewBox="0 0 2100 1700" xmlns="http://www.w3.org/2000/svg">
+            <!-- Store outline -->
+            <rect x="20" y="20" width="2060" height="1660" rx="12" fill="#1a1a2e" stroke="#2d2d5e" stroke-width="3"/>
+
+            <!-- BACK WALL zones (top) -->
+            <g id="zone-EB_KOREAN">
+              <rect x="40" y="40" width="200" height="500" rx="8" fill="#1e3a1e" stroke="#4CAF50" stroke-width="2" class="zone-rect" data-zone="EB_KOREAN"/>
+              <text x="140" y="270" text-anchor="middle" class="zone-label" dy="-15">EB Korean</text>
+              <text x="140" y="290" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-THE_FACE_SHOP">
+              <rect x="250" y="40" width="270" height="500" rx="8" fill="#2a3d1e" stroke="#8BC34A" stroke-width="2" class="zone-rect" data-zone="THE_FACE_SHOP"/>
+              <text x="385" y="270" text-anchor="middle" class="zone-label" dy="-15">The Face Shop</text>
+              <text x="385" y="290" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-GOOD_VIBES">
+              <rect x="530" y="40" width="220" height="500" rx="8" fill="#2e3d1a" stroke="#CDDC39" stroke-width="2" class="zone-rect" data-zone="GOOD_VIBES"/>
+              <text x="640" y="270" text-anchor="middle" class="zone-label" dy="-15">Good Vibes</text>
+              <text x="640" y="290" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-DERMDOC">
+              <rect x="760" y="40" width="200" height="500" rx="8" fill="#1a3335" stroke="#009688" stroke-width="2" class="zone-rect" data-zone="DERMDOC"/>
+              <text x="860" y="270" text-anchor="middle" class="zone-label" dy="-15">DermDoc</text>
+              <text x="860" y="290" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-MINIMALIST">
+              <rect x="970" y="40" width="220" height="500" rx="8" fill="#1a3038" stroke="#00BCD4" stroke-width="2" class="zone-rect" data-zone="MINIMALIST"/>
+              <text x="1080" y="270" text-anchor="middle" class="zone-label" dy="-15">Minimalist</text>
+              <text x="1080" y="290" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-AQUALOGICA">
+              <rect x="1200" y="40" width="200" height="500" rx="8" fill="#1a2e38" stroke="#03A9F4" stroke-width="2" class="zone-rect" data-zone="AQUALOGICA"/>
+              <text x="1300" y="270" text-anchor="middle" class="zone-label" dy="-15">Aqualogica</text>
+              <text x="1300" y="290" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-LAKME_SKIN">
+              <rect x="1410" y="40" width="200" height="500" rx="8" fill="#38152a" stroke="#E91E63" stroke-width="2" class="zone-rect" data-zone="LAKME_SKIN"/>
+              <text x="1510" y="270" text-anchor="middle" class="zone-label" dy="-15">Lakme Skin</text>
+              <text x="1510" y="290" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-ACCESSORIES">
+              <rect x="1620" y="40" width="230" height="500" rx="8" fill="#2d1a3e" stroke="#9C27B0" stroke-width="2" class="zone-rect" data-zone="ACCESSORIES"/>
+              <text x="1735" y="270" text-anchor="middle" class="zone-label" dy="-15">Accessories</text>
+              <text x="1735" y="290" text-anchor="middle" class="zone-count">—</text>
+            </g>
+
+            <!-- ENTRY (left wall) -->
+            <g id="zone-ENTRY">
+              <rect x="40" y="700" width="180" height="600" rx="8" fill="#1a2a4a" stroke="#2196F3" stroke-width="3" stroke-dasharray="8,4" class="zone-rect" data-zone="ENTRY"/>
+              <text x="130" y="980" text-anchor="middle" class="zone-label" dy="-15">Entry</text>
+              <text x="130" y="1000" text-anchor="middle" class="zone-count">—</text>
+              <text x="130" y="1050" text-anchor="middle" style="font-size:64px">🚪</text>
+            </g>
+
+            <!-- CENTER FLOOR -->
+            <g id="zone-FRAGRANCE">
+              <rect x="600" y="700" width="200" height="280" rx="8" fill="#2a1a4a" stroke="#673AB7" stroke-width="2" class="zone-rect" data-zone="FRAGRANCE"/>
+              <text x="700" y="825" text-anchor="middle" class="zone-label" dy="-10">Fragrance</text>
+              <text x="700" y="845" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-NAIL_UNIT">
+              <rect x="810" y="700" width="200" height="280" rx="8" fill="#3d1a30" stroke="#FF4081" stroke-width="2" class="zone-rect" data-zone="NAIL_UNIT"/>
+              <text x="910" y="825" text-anchor="middle" class="zone-label" dy="-10">Nail Unit</text>
+              <text x="910" y="845" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-MAKEUP_UNIT">
+              <rect x="1020" y="660" width="340" height="380" rx="8" fill="#3d2a1a" stroke="#FF6E40" stroke-width="2" class="zone-rect" data-zone="MAKEUP_UNIT"/>
+              <text x="1190" y="840" text-anchor="middle" class="zone-label" dy="-10">Makeup Island</text>
+              <text x="1190" y="860" text-anchor="middle" class="zone-count">—</text>
+            </g>
+
+            <!-- CASH COUNTER (right) -->
+            <g id="zone-CASH_COUNTER">
+              <rect x="1860" y="600" width="200" height="480" rx="8" fill="#3d1a1a" stroke="#F44336" stroke-width="3" class="zone-rect" data-zone="CASH_COUNTER"/>
+              <text x="1960" y="820" text-anchor="middle" class="zone-label" dy="-20">Cash</text>
+              <text x="1960" y="840" text-anchor="middle" class="zone-label" dy="-5">Counter</text>
+              <text x="1960" y="865" text-anchor="middle" class="zone-count">—</text>
+              <text x="1960" y="930" text-anchor="middle" style="font-size:56px">💳</text>
+            </g>
+            <g id="zone-PMU">
+              <rect x="1860" y="1100" width="200" height="280" rx="8" fill="#3d2a1a" stroke="#FF5722" stroke-width="2" class="zone-rect" data-zone="PMU"/>
+              <text x="1960" y="1225" text-anchor="middle" class="zone-label" dy="-10">PMU</text>
+              <text x="1960" y="1245" text-anchor="middle" class="zone-count">—</text>
+            </g>
+
+            <!-- FRONT WALL (bottom) -->
+            <g id="zone-STREAX">
+              <rect x="40" y="1280" width="190" height="380" rx="8" fill="#2a1e12" stroke="#795548" stroke-width="2" class="zone-rect" data-zone="STREAX"/>
+              <text x="135" y="1465" text-anchor="middle" class="zone-label" dy="-10">Streax</text>
+              <text x="135" y="1485" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-ALPS_GOODNESS">
+              <rect x="240" y="1280" width="210" height="380" rx="8" fill="#1a2e14" stroke="#4CAF50" stroke-width="2" class="zone-rect" data-zone="ALPS_GOODNESS"/>
+              <text x="345" y="1465" text-anchor="middle" class="zone-label" dy="-10">Alps Goodness</text>
+              <text x="345" y="1485" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-RENEE_NYBAE">
+              <rect x="460" y="1280" width="220" height="380" rx="8" fill="#2e1a3a" stroke="#9C27B0" stroke-width="2" class="zone-rect" data-zone="RENEE_NYBAE"/>
+              <text x="570" y="1465" text-anchor="middle" class="zone-label" dy="-10">Renee / NY Bae</text>
+              <text x="570" y="1485" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-SWISS_BEAUTY">
+              <rect x="690" y="1280" width="220" height="380" rx="8" fill="#3a1a2e" stroke="#E91E63" stroke-width="2" class="zone-rect" data-zone="SWISS_BEAUTY"/>
+              <text x="800" y="1465" text-anchor="middle" class="zone-label" dy="-10">Swiss Beauty</text>
+              <text x="800" y="1485" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-COLORBAR_SUGAR">
+              <rect x="920" y="1280" width="220" height="380" rx="8" fill="#3a1a1a" stroke="#F44336" stroke-width="2" class="zone-rect" data-zone="COLORBAR_SUGAR"/>
+              <text x="1030" y="1465" text-anchor="middle" class="zone-label" dy="-10">Colorbar / Sugar</text>
+              <text x="1030" y="1485" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-LAKME">
+              <rect x="1150" y="1280" width="220" height="380" rx="8" fill="#3a2a1a" stroke="#FFC107" stroke-width="2" class="zone-rect" data-zone="LAKME"/>
+              <text x="1260" y="1465" text-anchor="middle" class="zone-label" dy="-10">Lakme Makeup</text>
+              <text x="1260" y="1485" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-FACES_CANADA">
+              <rect x="1380" y="1280" width="220" height="380" rx="8" fill="#3a2a1a" stroke="#FF9800" stroke-width="2" class="zone-rect" data-zone="FACES_CANADA"/>
+              <text x="1490" y="1465" text-anchor="middle" class="zone-label" dy="-10">Faces Canada</text>
+              <text x="1490" y="1485" text-anchor="middle" class="zone-count">—</text>
+            </g>
+            <g id="zone-MAYBELLINE">
+              <rect x="1610" y="1280" width="220" height="380" rx="8" fill="#3a1a1a" stroke="#FF5722" stroke-width="2" class="zone-rect" data-zone="MAYBELLINE"/>
+              <text x="1720" y="1465" text-anchor="middle" class="zone-label" dy="-10">Maybelline</text>
+              <text x="1720" y="1485" text-anchor="middle" class="zone-count">—</text>
+            </g>
+
+            <!-- Labels -->
+            <text x="1040" y="600" text-anchor="middle" class="section-label">F.O.H — FLOOR OF HOUSE</text>
+            <text x="130" y="1260" text-anchor="middle" class="section-label" transform="rotate(-90 130 1260)" style="font-size:36px">← ENTRY</text>
+          </svg>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-column">
+
+        <!-- Conversion Funnel -->
+        <section class="panel funnel-panel">
+          <div class="panel-header">
+            <h2>🔽 Conversion Funnel</h2>
+            <span class="panel-sub">Visitor journey stages</span>
+          </div>
+          <div class="funnel-container" id="funnel-container">
+            <div class="funnel-loading">Loading funnel data...</div>
+          </div>
+        </section>
+
+        <!-- Anomaly Feed -->
+        <section class="panel anomaly-panel">
+          <div class="panel-header">
+            <h2>⚠️ Live Anomaly Feed</h2>
+            <span class="panel-sub" id="anomaly-count">Checking...</span>
+          </div>
+          <div class="anomaly-list" id="anomaly-list">
+            <div class="anomaly-loading">Scanning for anomalies...</div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="bottom-grid">
+
+      <!-- Brand Performance Table -->
+      <section class="panel brand-panel">
+        <div class="panel-header">
+          <h2>🏆 Brand Performance</h2>
+          <span class="panel-sub">Engagement · Conversion · Revenue</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="brand-table" id="brand-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Brand Zone</th>
+                <th>Category</th>
+                <th>Visitors</th>
+                <th>Avg Dwell</th>
+                <th>Conversions</th>
+                <th>Conv %</th>
+                <th>Revenue ₹</th>
+              </tr>
+            </thead>
+            <tbody id="brand-tbody">
+              <tr><td colspan="8" class="loading-cell">Loading brand data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Journey Paths -->
+      <section class="panel journey-panel">
+        <div class="panel-header">
+          <h2>🗺️ Common Shopper Paths</h2>
+          <span class="panel-sub" id="journey-stats">Reconstructed journeys</span>
+        </div>
+        <div class="journey-list" id="journey-list">
+          <div class="journey-loading">Reconstructing journeys...</div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Toast notifications -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
