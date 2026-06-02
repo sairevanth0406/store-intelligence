@@ -58,6 +58,26 @@ app.include_router(brands_router, prefix="/stores", tags=["Brand Intelligence"])
 app.include_router(journeys_router, prefix="/stores", tags=["Journeys"])
 app.include_router(health_router, tags=["Health"])
 
+# Global exception handlers for database unavailability (HTTP 503 Graceful Degradation)
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import aiosqlite
+import sqlite3
+
+@app.exception_handler(aiosqlite.Error)
+async def sqlite_exception_handler(request: Request, exc: aiosqlite.Error):
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Database service temporarily unavailable", "error": str(exc)},
+    )
+
+@app.exception_handler(sqlite3.Error)
+async def sqlite3_exception_handler(request: Request, exc: sqlite3.Error):
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Database service temporarily unavailable", "error": str(exc)},
+    )
+
 # Serve live dashboard
 dashboard_dir = os.path.join(os.path.dirname(__file__), "..", "dashboard")
 if os.path.isdir(dashboard_dir):

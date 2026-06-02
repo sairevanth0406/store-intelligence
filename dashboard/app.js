@@ -282,11 +282,17 @@ async function fetchJourneys() {
 function timeSince(isoString) {
   try {
     const diff = (Date.now() - new Date(isoString).getTime()) / 1000;
-    if (diff < 60) return `${Math.round(diff)}s ago`;
+    if (diff < 60)   return `${Math.round(diff)}s ago`;
     if (diff < 3600) return `${Math.round(diff / 60)}m ago`;
-    return `${Math.round(diff / 3600)}h ago`;
+    if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
+    // Older than 24h — show the actual date + time instead of "1270h ago"
+    return new Date(isoString).toLocaleString("en-IN", {
+      day: "2-digit", month: "short",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    });
   } catch { return ""; }
 }
+
 
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");

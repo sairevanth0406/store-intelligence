@@ -29,12 +29,24 @@ async def health_check(store_id: str = "STORE_BLR_002"):
         db = await get_db()
         try:
             db_ok = True
+            
+            # Anchor to latest event time to support both historical data and live streams
+            row_latest = await db.execute_fetchall("SELECT MAX(timestamp) as max_ts FROM events WHERE store_id=?", (store_id,))
+            latest_ts_str = row_latest[0]["max_ts"] if row_latest and row_latest[0]["max_ts"] else None
+            
+            if latest_ts_str:
+                anchor_now = datetime.fromisoformat(latest_ts_str.replace("Z", "+00:00"))
+                if anchor_now.tzinfo is None:
+                    anchor_now = anchor_now.replace(tzinfo=timezone.utc)
+            else:
+                anchor_now = now
+
             for cam_id in KNOWN_CAMERAS:
                 row = await db.execute_fetchall(
                     "SELECT MAX(timestamp) as last_ts FROM events WHERE store_id=? AND camera_id=?",
                     (store_id, cam_id),
                 )
-                last_ts_str = row[0]["last_ts"] if row else None
+                last_ts_str = row[0]["last_ts"] if row and row[0]["last_ts"] else None
 
                 if not last_ts_str:
                     cameras.append(CameraStatus(
@@ -49,7 +61,7 @@ async def health_check(store_id: str = "STORE_BLR_002"):
                 last_ts = datetime.fromisoformat(last_ts_str.replace("Z", "+00:00"))
                 if last_ts.tzinfo is None:
                     last_ts = last_ts.replace(tzinfo=timezone.utc)
-                delta_min = (now - last_ts).total_seconds() / 60
+                delta_min = (anchor_now - last_ts).total_seconds() / 60
 
                 if delta_min > STALE_MINUTES:
                     status = "stale"
@@ -75,7 +87,12 @@ async def health_check(store_id: str = "STORE_BLR_002"):
         overall_status = "unhealthy"
 
     if warnings:
-        overall_status = "degraded" if db_ok else "unhealthy"
+        # Ignore warning if it's just camera 'no_data' at startup, unless there are active stalenesses
+        has_stale_camera = any(c.status == "stale" for c in cameras)
+        if has_stale_camera or not db_ok:
+            overall_status = "degraded" if db_ok else "unhealthy"
+        else:
+            overall_status = "healthy"
 
     return HealthResponse(
         status=overall_status,

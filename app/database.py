@@ -9,7 +9,7 @@ from pathlib import Path
 
 log = structlog.get_logger()
 
-DB_PATH = os.environ.get("DB_PATH", "/data/store_intelligence.db")
+DB_PATH = os.environ.get("DB_PATH", "data/store_intelligence.db")
 
 
 async def get_db() -> aiosqlite.Connection:

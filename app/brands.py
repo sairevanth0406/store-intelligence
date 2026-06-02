@@ -27,6 +27,7 @@ ZONE_BRAND_CATEGORY_MAP = {
     "SWISS_BEAUTY": "Swiss Beauty",
     "ALPS_GOODNESS": "Alps",
     "STREAX": "Streax",
+    "RENEE_NYBAE": "NY Bae",
 }
 
 
@@ -53,35 +54,52 @@ async def get_brand_intelligence(
             now = datetime.now(timezone.utc)
 
         window_start = (now - timedelta(hours=window_hours)).isoformat()
-        # Zone engagement stats
+        # Zone engagement stats — customer is converted if they have a conversion event in the store during the window
         zone_rows = await db.execute_fetchall(
             """
             SELECT
                 zone_id,
                 COUNT(DISTINCT person_id) as visitors,
                 AVG(dwell_seconds) as avg_dwell,
-                COUNT(DISTINCT CASE WHEN event_type='CHECKOUT' THEN person_id END) as converted_v
+                COUNT(DISTINCT CASE WHEN person_id IN (
+                    SELECT DISTINCT e2.person_id 
+                    FROM events e2
+                    WHERE e2.store_id=events.store_id AND e2.timestamp>=? AND e2.is_staff=0
+                      AND (
+                          e2.event_type = 'CHECKOUT'
+                          OR
+                          (e2.zone_id='CASH_COUNTER' AND EXISTS (
+                              SELECT 1 FROM pos_transactions p
+                              WHERE p.store_id = e2.store_id
+                                AND CAST(strftime('%s', p.order_time) AS INTEGER) >= CAST(strftime('%s', e2.timestamp) AS INTEGER)
+                                AND CAST(strftime('%s', p.order_time) AS INTEGER) <= CAST(strftime('%s', e2.timestamp) AS INTEGER) + 300
+                          ))
+                      )
+                ) THEN person_id END) as converted_v
             FROM events
             WHERE store_id=? AND timestamp>=? AND zone_id IS NOT NULL
             AND zone_id NOT IN ('ENTRY','STAFF_AREA','CASH_COUNTER') AND is_staff=0
             GROUP BY zone_id
             ORDER BY visitors DESC
             """,
-            (store_id, window_start),
+            (window_start, store_id, window_start),
         )
 
-        # POS data for revenue attribution
+        # POS data for revenue attribution — fetch ALL transactions for this store.
+        # POS data is a fixed historical dataset (April 10); filtering by event window
+        # causes revenue to disappear when live events push window_start past the POS date.
         pos_rows = await db.execute_fetchall(
             """
             SELECT brand, SUM(gmv) as total_gmv, product_name
             FROM pos_transactions
-            WHERE store_id=? AND order_time>=?
+            WHERE store_id=?
             GROUP BY brand
             """,
-            (store_id, window_start),
+            (store_id,),
         )
         brand_revenue = {r["brand"]: r["total_gmv"] for r in pos_rows if r["brand"]}
         brand_top_product = {r["brand"]: r["product_name"] for r in pos_rows if r["brand"]}
+
 
         total_revenue = sum(brand_revenue.values())
     finally:

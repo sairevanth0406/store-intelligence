@@ -50,59 +50,62 @@ async def get_metrics(
         )
         unique_visitors = row[0]["cnt"] if row else 0
 
-        # Average dwell time (from sessions)
+        # Average dwell time — read from ZONE_DWELL events directly
+        # (sessions.total_dwell_s is only populated by full pipeline runs;
+        #  dwell_seconds on events is reliable for both pipeline and simulator data)
         row = await db.execute_fetchall(
             """
-            SELECT AVG(total_dwell_s) as avg_dwell
-            FROM sessions
-            WHERE store_id=? AND entry_time>=? AND is_staff=0
+            SELECT AVG(dwell_seconds) as avg_dwell
+            FROM events
+            WHERE store_id=? AND timestamp>=? AND is_staff=0
+              AND dwell_seconds IS NOT NULL AND dwell_seconds > 0
             """,
             (store_id, window_start),
         )
         avg_dwell = round(row[0]["avg_dwell"] or 0, 1) if row else 0.0
 
-        # Conversion: unique visitors who had a POS transaction within 5 minutes of visiting CASH_COUNTER
-        row_pos_count = await db.execute_fetchall("SELECT COUNT(*) as cnt FROM pos_transactions WHERE store_id=?", (store_id,))
-        has_pos = row_pos_count[0]["cnt"] > 0 if row_pos_count else False
-        
-        if has_pos:
-            row = await db.execute_fetchall(
-                """
-                SELECT COUNT(DISTINCT e.person_id) as cnt
-                FROM events e
-                JOIN pos_transactions p ON p.store_id = e.store_id
-                WHERE e.store_id=? AND e.timestamp>=? AND e.zone_id='CASH_COUNTER' AND e.is_staff=0
-                  AND CAST(strftime('%s', p.order_time) AS INTEGER) >= CAST(strftime('%s', e.timestamp) AS INTEGER)
-                  AND CAST(strftime('%s', p.order_time) AS INTEGER) <= CAST(strftime('%s', e.timestamp) AS INTEGER) + 300
-                """,
-                (store_id, window_start),
-            )
-            converted = row[0]["cnt"] if row else 0
-        else:
-            # Fallback if no POS transactions are loaded
-            row = await db.execute_fetchall(
-                """
-                SELECT COUNT(DISTINCT person_id) as cnt
-                FROM events
-                WHERE store_id=? AND timestamp>=? AND zone_id='CASH_COUNTER' AND is_staff=0
-                """,
-                (store_id, window_start),
-            )
-            converted = row[0]["cnt"] if row else 0
-            
+        # Conversion: unique visitors who either had a direct CHECKOUT event or a POS transaction within 5 minutes of visiting CASH_COUNTER
+        row = await db.execute_fetchall(
+            """
+            SELECT COUNT(DISTINCT e.person_id) as cnt
+            FROM events e
+            WHERE e.store_id=? AND e.timestamp>=? AND e.is_staff=0
+              AND (
+                  e.event_type = 'CHECKOUT'
+                  OR
+                  (e.zone_id='CASH_COUNTER' AND EXISTS (
+                      SELECT 1 FROM pos_transactions p
+                      WHERE p.store_id = e.store_id
+                        AND CAST(strftime('%s', p.order_time) AS INTEGER) >= CAST(strftime('%s', e.timestamp) AS INTEGER)
+                        AND CAST(strftime('%s', p.order_time) AS INTEGER) <= CAST(strftime('%s', e.timestamp) AS INTEGER) + 300
+                  ))
+              )
+            """,
+            (store_id, window_start),
+        )
+        converted = row[0]["cnt"] if row else 0
         conversion_rate = round(converted / unique_visitors, 4) if unique_visitors > 0 else 0.0
 
-        # Queue depth: people currently in CASH_COUNTER (ZONE_ENTER - ZONE_EXIT in last 30 min)
-        q_start = (now - timedelta(minutes=30)).isoformat()
-        row_enter = await db.execute_fetchall(
-            "SELECT COUNT(DISTINCT person_id) as cnt FROM events WHERE store_id=? AND timestamp>=? AND zone_id='CASH_COUNTER' AND event_type='ZONE_ENTER' AND is_staff=0",
-            (store_id, q_start),
+        # Queue depth: people currently in CASH_COUNTER zone
+        # Use real wall-clock now() — not event-anchored — so it reflects the current moment
+        real_now = datetime.now(timezone.utc)
+        q_start = (real_now - timedelta(minutes=30)).isoformat()
+        row_queue = await db.execute_fetchall(
+            """
+            SELECT COUNT(DISTINCT person_id) as cnt
+            FROM events
+            WHERE store_id=? AND timestamp>=? AND zone_id='CASH_COUNTER'
+              AND event_type='ZONE_ENTER' AND is_staff=0
+              AND person_id NOT IN (
+                  SELECT DISTINCT person_id FROM events
+                  WHERE store_id=? AND timestamp>=? AND zone_id='CASH_COUNTER'
+                    AND event_type='ZONE_EXIT'
+              )
+            """,
+            (store_id, q_start, store_id, q_start),
         )
-        row_exit = await db.execute_fetchall(
-            "SELECT COUNT(DISTINCT person_id) as cnt FROM events WHERE store_id=? AND timestamp>=? AND zone_id='CASH_COUNTER' AND event_type='ZONE_EXIT' AND is_staff=0",
-            (store_id, q_start),
-        )
-        queue_depth = max(0, (row_enter[0]["cnt"] if row_enter else 0) - (row_exit[0]["cnt"] if row_exit else 0))
+        queue_depth = max(0, row_queue[0]["cnt"] if row_queue else 0)
+
 
         # Abandonment: entered but never reached billing zone
         row = await db.execute_fetchall(

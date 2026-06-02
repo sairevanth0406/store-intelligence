@@ -79,28 +79,25 @@ async def get_funnel(
         billing_count = row[0]["cnt"] if row else 0
 
         # Stage 5: Purchase (correlated via POS or CHECKOUT)
-        row_pos_count = await db.execute_fetchall("SELECT COUNT(*) as cnt FROM pos_transactions WHERE store_id=?", (store_id,))
-        has_pos = row_pos_count[0]["cnt"] > 0 if row_pos_count else False
-        
-        if has_pos:
-            row = await db.execute_fetchall(
-                """
-                SELECT COUNT(DISTINCT e.person_id) as cnt
-                FROM events e
-                JOIN pos_transactions p ON p.store_id = e.store_id
-                WHERE e.store_id=? AND e.timestamp>=? AND e.zone_id='CASH_COUNTER' AND e.is_staff=0
-                  AND CAST(strftime('%s', p.order_time) AS INTEGER) >= CAST(strftime('%s', e.timestamp) AS INTEGER)
-                  AND CAST(strftime('%s', p.order_time) AS INTEGER) <= CAST(strftime('%s', e.timestamp) AS INTEGER) + 300
-                """,
-                (store_id, window_start),
-            )
-            purchase_count = row[0]["cnt"] if row else 0
-        else:
-            row = await db.execute_fetchall(
-                "SELECT COUNT(DISTINCT person_id) as cnt FROM events WHERE store_id=? AND timestamp>=? AND event_type='CHECKOUT' AND is_staff=0",
-                (store_id, window_start),
-            )
-            purchase_count = row[0]["cnt"] if row else 0
+        row = await db.execute_fetchall(
+            """
+            SELECT COUNT(DISTINCT e.person_id) as cnt
+            FROM events e
+            WHERE e.store_id=? AND e.timestamp>=? AND e.is_staff=0
+              AND (
+                  e.event_type = 'CHECKOUT'
+                  OR
+                  (e.zone_id='CASH_COUNTER' AND EXISTS (
+                      SELECT 1 FROM pos_transactions p
+                      WHERE p.store_id = e.store_id
+                        AND CAST(strftime('%s', p.order_time) AS INTEGER) >= CAST(strftime('%s', e.timestamp) AS INTEGER)
+                        AND CAST(strftime('%s', p.order_time) AS INTEGER) <= CAST(strftime('%s', e.timestamp) AS INTEGER) + 300
+                  ))
+              )
+            """,
+            (store_id, window_start),
+        )
+        purchase_count = row[0]["cnt"] if row else 0
     finally:
         await db.close()
 

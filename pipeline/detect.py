@@ -205,10 +205,10 @@ def process_camera(
 
     finally:
         cap.release()
-        # Final flush
+        # Final flush — drain() waits for all in-flight thread-pool sends to finish
         final_exits = tracker.flush_stale(current_ts if frame_idx > 0 else datetime.now(timezone.utc))
         emitter.add_many(final_exits)
-        emitter.flush()
+        emitter.drain()  # blocks until all batches sent (non-blocking to caller was during loop)
 
     log.info(
         "detect.complete",
