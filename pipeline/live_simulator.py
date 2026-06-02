@@ -7,9 +7,10 @@ import time
 import uuid
 import random
 import requests
+import os
 from datetime import datetime, timezone, timedelta
 
-API_URL = "http://localhost:8000"
+API_URL = os.environ.get("API_URL", "https://store-intelligence-bv8o.onrender.com")
 STORE_ID = "STORE_BLR_002"
 
 ZONES = [
