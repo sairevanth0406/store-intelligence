@@ -1,6 +1,24 @@
 version: "3.9"
 
 services:
+
+  # ── Redis Streams (event transport layer) ───────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: store_intelligence_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "com.purplle.service=redis"
+
+  # ── FastAPI Analytics Engine ─────────────────────────────────────────────
   api:
     build:
       context: .
@@ -19,6 +37,12 @@ services:
       - CONV_DROP_CRITICAL=0.60
       - DEAD_ZONE_MINUTES=30
       - PYTHONUNBUFFERED=1
+      - REDIS_URL=redis://redis:6379
+      - REDIS_STREAM=store:events
+      - API_URL=http://api:8000
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
@@ -29,6 +53,30 @@ services:
     labels:
       - "com.purplle.service=store-intelligence"
       - "com.purplle.store=STORE_BLR_002"
+
+  # ── Redis → API event consumer (runs alongside the detection pipeline) ───
+  redis_consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: store_intelligence_consumer
+    command: python -m pipeline.redis_consumer
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - REDIS_STREAM=store:events
+      - REDIS_GROUP=ingest_workers
+      - CONSUMER_NAME=consumer-1
+      - API_URL=http://api:8000
+      - CONSUMER_BATCH=50
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    labels:
+      - "com.purplle.service=redis-consumer"
 
 volumes:
   store_data:

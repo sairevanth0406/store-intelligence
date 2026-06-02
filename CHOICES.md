@@ -42,3 +42,30 @@
 - Store layout data (Brigade Road - Store layout.xlsx) was analyzed to extract exact brand positions, and camera preview images confirmed zone locations.
 
 **Trade-off**: Requires upfront zone polygon calibration per camera. Mitigated by the `store_layout.json` configuration file, which decouples zone definitions from code.
+
+---
+
+## Choice 4: Redis Streams over Kafka for Event Transport
+
+**Decision**: Use Redis Streams (with automatic HTTP fallback) instead of Apache Kafka for buffering events from the CV pipeline to the API.
+
+**Rationale**:
+- **Durability over raw HTTP**: Previously, the pipeline sent events via synchronous HTTP POST directly to FastAPI. If the API was briefly unavailable, events were **permanently lost** after 3 retries. Redis Streams gives us a durable, append-only event log — events survive API restarts and are ACK-only removed from the stream once successfully ingested.
+- **Redis vs. Kafka**: Kafka is the industry standard for high-throughput event streaming but adds significant operational complexity (ZooKeeper/KRaft quorum, topic partitioning, broker management). For a single store with 5 cameras producing ~100 events/minute, Redis Streams provides equivalent durability with a fraction of the setup cost. Redis 7's `maxlen` with approximate trimming acts as a circular buffer, capping memory usage at ~256MB.
+- **Graceful fallback**: The `EventEmitter` tries to connect to Redis at startup. If Redis is unreachable (e.g., running without Docker), it silently falls back to direct HTTP POST — preserving backwards compatibility and making local development dependency-free.
+- **AI suggestion**: AI initially suggested Kafka with a consumer group and topic partitioning. We overrode this in favour of Redis Streams for this scale because Kafka's operational overhead (multi-broker, topic management) would overwhelm the single-store challenge context without adding meaningful value.
+
+**Alternative considered**: Apache Kafka. Rejected for this scale as over-engineered. PostgreSQL LISTEN/NOTIFY was also considered but couples event transport to the analytics DB.
+
+---
+
+## Choice 5: httpx + ThreadPoolExecutor over blocking requests
+
+**Decision**: Replace the synchronous `requests` library in the event emitter with `httpx` running inside a `concurrent.futures.ThreadPoolExecutor`.
+
+**Rationale**:
+- **Non-blocking camera pipelines**: The original emitter used Python's `requests` library synchronously. When 5 cameras were processing frames simultaneously in a multi-threaded environment, each camera's detection loop would stall for up to 30 seconds waiting for an HTTP response before processing the next frame — causing cascading frame drops.
+- **httpx advantages**: `httpx` is a modern HTTP client with connection pooling, HTTP/2 support, and cleaner timeout semantics. It performs measurably better than `requests` for repeated connections to the same host (our FastAPI instance).
+- **ThreadPoolExecutor**: By submitting each batch send to a thread pool (`max_workers=4`), the main detection loop immediately returns after calling `flush()`, continues processing the next video frame, and the HTTP call completes asynchronously in a background thread. The `drain()` method at pipeline shutdown gracefully waits for all in-flight requests.
+- **AI suggestion**: AI suggested using `asyncio` with `httpx.AsyncClient` throughout. We partially overrode this — the detection loop itself is synchronous (driven by OpenCV's frame-by-frame API which cannot be awaited), so we chose a ThreadPoolExecutor hybrid that achieves the same non-blocking property without restructuring the entire pipeline as async.
+
