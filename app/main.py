@@ -25,6 +25,29 @@ async def lifespan(app: FastAPI):
     """Initialize database on startup."""
     setup_logging()
     await init_db()
+    
+    # Auto-load POS CSV data if pos_transactions is empty (crucial for clean deployments like Render)
+    try:
+        import structlog
+        from app.database import get_db
+        db = await get_db()
+        row = await db.execute_fetchall("SELECT COUNT(*) as cnt FROM pos_transactions")
+        count = row[0]["cnt"] if row else 0
+        await db.close()
+        
+        if count == 0:
+            import os
+            from pipeline.pos_loader import load_pos_to_db
+            from app.database import DB_PATH
+            
+            csv_path = os.path.join(os.path.dirname(__file__), "..", "data", "Brigade_Bangalore_10_April_26.csv")
+            if os.path.exists(csv_path):
+                await load_pos_to_db(csv_path, DB_PATH)
+                structlog.get_logger().info("database.auto_load_pos", status="loaded", path=csv_path)
+    except Exception as e:
+        import structlog
+        structlog.get_logger().error("database.auto_load_pos_failed", error=str(e))
+        
     yield
 
 
