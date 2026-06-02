@@ -28,6 +28,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
+from fastapi.responses import RedirectResponse
+
 app = FastAPI(
     title="Purplle Store Intelligence API",
     description=(
@@ -38,6 +40,11 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+@app.get("/")
+async def root_redirect():
+    """Redirect root path to the live web dashboard."""
+    return RedirectResponse(url="/dashboard/")
 
 # CORS for dashboard
 app.add_middleware(
